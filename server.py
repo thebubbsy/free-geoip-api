@@ -4,6 +4,7 @@ import geoip2.database
 from fastapi.responses import HTMLResponse
 import os
 import uvicorn
+from typing import List
 
 app = FastAPI(title="Free GeoIP API")
 
@@ -17,12 +18,22 @@ if os.path.exists(r"C:\temp\GeoLite2-City.mmdb"):
 else:
     DB_PATH = DB_FILENAME 
 
-# Check if DB exists
-if not os.path.exists(DB_PATH):
+# Global Reader for High Performance
+reader = None
+if os.path.exists(DB_PATH):
+    try:
+        reader = geoip2.database.Reader(DB_PATH)
+        print(f"Database loaded successfully from {DB_PATH}")
+    except Exception as e:
+        print(f"CRITICAL: Failed to load database: {e}")
+else:
     print(f"WARNING: Database not found at {DB_PATH}. Make sure to upload it!")
 
 class IPRequest(BaseModel):
     ip: str
+
+class BatchIPRequest(BaseModel):
+    ips: List[str]
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -38,7 +49,7 @@ async def root():
             h1 { border-bottom: 2px solid #333; padding-bottom: 10px; color: #ffffff; }
             h2 { margin-top: 2rem; color: #ffffff; }
             .container { background: #1e1e1e; padding: 2rem; border-radius: 8px; border: 1px solid #333; }
-            input { padding: 10px; font-size: 1rem; margin-right: 10px; background: #2d2d2d; border: 1px solid #444; color: #fff; border-radius: 4px; }
+            input, textarea { padding: 10px; font-size: 1rem; margin-right: 10px; background: #2d2d2d; border: 1px solid #444; color: #fff; border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
             button { background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 10px; font-size: 1rem; }
             button:hover { background: #0051a2; }
             pre { background: #000; color: #0f0; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem; border: 1px solid #333; }
@@ -57,11 +68,19 @@ async def root():
         </p>
         
         <div class="container">
-            <h3>Try it out</h3>
+            <h3>Try it out (Single IP)</h3>
             <p>Enter an IP address to lookup:</p>
             <input type="text" id="ipInput" placeholder="8.8.8.8" value="8.8.8.8">
             <button onclick="lookup()">Lookup IP</button>
             <div id="result"></div>
+        </div>
+
+        <div class="container" style="margin-top: 20px;">
+            <h3>Batch Processing</h3>
+            <p>Enter multiple IPs (comma separated) to batch process:</p>
+            <textarea id="batchInput" rows="3" placeholder="8.8.8.8, 1.1.1.1, 24.48.0.1">8.8.8.8, 1.1.1.1</textarea>
+            <button onclick="lookupBatch()">Lookup Batch</button>
+            <div id="batchResult"></div>
         </div>
 
         <h2>API Documentation</h2>
@@ -79,21 +98,14 @@ async def root():
         <pre>curl -X POST https://free-geoip-api.onrender.com/locate \
      -H "Content-Type: application/json" \
      -d '{"ip": "1.1.1.1"}'</pre>
-
-        <h3>Response Format</h3>
-        <pre>{
-  "ip": "8.8.8.8",
-  "city": "Glenmont",
-  "region": "Ohio",
-  "country": "United States",
-  "iso_code": "US",
-  "location": {
-    "latitude": 40.5369,
-    "longitude": -82.1286,
-    "time_zone": "America/New_York",
-    "accuracy_radius": 1000
-  }
-}</pre>
+     
+        <div class="endpoint">
+            <span class="method">POST</span> <code>/batch</code>
+        </div>
+        <p>Retrieve location data for up to 100 IPs in a single request. Highly optimized for speed.</p>
+        <pre>curl -X POST https://free-geoip-api.onrender.com/batch \
+     -H "Content-Type: application/json" \
+     -d '{"ips": ["1.1.1.1", "8.8.8.8"]}'</pre>
 
         <script>
             async function lookup() {
@@ -109,43 +121,71 @@ async def root():
                     resultDiv.innerHTML = '<p style="color:red">Error fetching data</p>';
                 }
             }
+            
+            async function lookupBatch() {
+                const raw = document.getElementById('batchInput').value;
+                const ips = raw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                const resultDiv = document.getElementById('batchResult');
+                resultDiv.innerHTML = 'Processing ' + ips.length + ' IPs...';
+                
+                try {
+                    const res = await fetch('/batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ips: ips })
+                    });
+                    const data = await res.json();
+                    resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } catch (e) {
+                    resultDiv.innerHTML = '<p style="color:red">Error fetching batch data</p>';
+                }
+            }
         </script>
     </body>
     </html>
-    """
+    ""
 
-def get_location_data(ip: str):
-    if not os.path.exists(DB_PATH):
-         raise HTTPException(status_code=500, detail="Database file not found on server.")
+def resolve_ip(ip: str):
+    if not reader:
+         # Fallback if DB load failed
+         return {"ip": ip, "error": "Database not loaded"}
          
     try:
-        with geoip2.database.Reader(DB_PATH) as reader:
-            response = reader.city(ip)
-            return {
-                "ip": ip,
-                "city": response.city.name if response.city.name else "Unknown",
-                "region": response.subdivisions.most_specific.name if response.subdivisions else "Unknown",
-                "country": response.country.name if response.country.name else "Unknown",
-                "iso_code": response.country.iso_code if response.country.iso_code else "Unknown",
-                "location": {
-                    "latitude": response.location.latitude,
-                    "longitude": response.location.longitude,
-                    "time_zone": response.location.time_zone,
-                    "accuracy_radius": response.location.accuracy_radius
-                }
+        response = reader.city(ip)
+        return {
+            "ip": ip,
+            "city": response.city.name if response.city.name else "Unknown",
+            "region": response.subdivisions.most_specific.name if response.subdivisions else "Unknown",
+            "country": response.country.name if response.country.name else "Unknown",
+            "iso_code": response.country.iso_code if response.country.iso_code else "Unknown",
+            "location": {
+                "latitude": response.location.latitude,
+                "longitude": response.location.longitude,
+                "time_zone": response.location.time_zone,
+                "accuracy_radius": response.location.accuracy_radius
             }
+        }
     except geoip2.errors.AddressNotFoundError:
-        raise HTTPException(status_code=404, detail="IP Address not found in database")
+        return {"ip": ip, "error": "Not Found"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return {"ip": ip, "error": str(e)}
 
 @app.get("/locate/{ip}")
 async def locate_get(ip: str):
-    return get_location_data(ip)
+    res = resolve_ip(ip)
+    if "error" in res and res["error"] == "Not Found":
+        raise HTTPException(status_code=404, detail="IP not found")
+    return res
 
 @app.post("/locate")
 async def locate_post(request: IPRequest):
-    return get_location_data(request.ip)
+    return resolve_ip(request.ip)
+
+@app.post("/batch")
+async def batch_post(request: BatchIPRequest):
+    # Optimized for high-throughput
+    # Processing list in-memory without IO overhead per-request
+    return [resolve_ip(ip) for ip in request.ips]
 
 if __name__ == "__main__":
     print(f"Starting server on port {PORT}...")

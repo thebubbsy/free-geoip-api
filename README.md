@@ -5,7 +5,8 @@ A lightweight, self-hosted REST API for IP geolocation, powered by FastAPI and t
 ## 🚀 Features
 
 *   **Free to Host:** Designed to run on free tier cloud providers (like Render.com).
-*   **Fast:** Built with FastAPI and Uvicorn.
+*   **High Performance:** Uses in-memory database reader for low-latency lookups.
+*   **Batch Processing:** Supports resolving hundreds of IPs in a single request.
 *   **Simple API:** Supports both `GET` and `POST` requests.
 *   **No External API Limits:** Since you host the database, you don't hit rate limits from third-party GeoIP providers.
 
@@ -62,6 +63,39 @@ POST /locate
 {
   "ip": "8.8.8.8"
 }
+```
+
+### Batch Processing (POST)
+To resolve multiple IPs efficiently (e.g., 100 IPs per request), use the batch endpoint.
+
+```http
+POST /batch
+```
+**Body:**
+```json
+{
+  "ips": ["1.1.1.1", "8.8.8.8", "1.0.0.1"]
+}
+```
+
+**Response:**
+```json
+[
+  {
+    "ip": "1.1.1.1",
+    "city": "Unknown",
+    "country": "Australia",
+    "iso_code": "AU",
+    ...
+  },
+  {
+    "ip": "8.8.8.8",
+    "city": "Glenmont",
+    "country": "United States",
+    "iso_code": "US",
+    ...
+  }
+]
 ```
 
 ## ⚖️ License
