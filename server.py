@@ -49,7 +49,11 @@ async def root():
     </head>
     <body>
         <h1>Free GeoIP API</h1>
-        <p>A simple, self-hosted API to retrieve location data from IP addresses using the MaxMind GeoLite2 database.</p>
+        <p>
+            A simple, self-hosted API to retrieve location data from IP addresses using the MaxMind GeoLite2 database.
+            <br>
+            <a href="https://github.com/thebubbsy/free-geoip-api" target="_blank" style="color: #0070f3; text-decoration: none;"><strong>View Source on GitHub ↗</strong></a>
+        </p>
         
         <div class="container">
             <h3>Try it out</h3>
