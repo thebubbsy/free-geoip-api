@@ -65,13 +65,13 @@ async def root():
             <span class="method">GET</span> <code>/locate/{ip}</code>
         </div>
         <p>Retrieve location data for a specific IP address via URL parameter.</p>
-        <pre>curl https://your-app-url.onrender.com/locate/8.8.8.8</pre>
+        <pre>curl https://free-geoip-api.onrender.com/locate/8.8.8.8</pre>
 
         <div class="endpoint">
             <span class="method">POST</span> <code>/locate</code>
         </div>
         <p>Retrieve location data via JSON body.</p>
-        <pre>curl -X POST https://your-app-url.onrender.com/locate \
+        <pre>curl -X POST https://free-geoip-api.onrender.com/locate \
      -H "Content-Type: application/json" \
      -d '{"ip": "1.1.1.1"}'</pre>
 

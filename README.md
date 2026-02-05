@@ -13,7 +13,7 @@ A lightweight, self-hosted REST API for IP geolocation, powered by FastAPI and t
 
 1.  **Clone the repo:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/free-geoip-api.git
+    git clone https://github.com/thebubbsy/free-geoip-api.git
     cd free-geoip-api
     ```
 
@@ -40,7 +40,7 @@ A lightweight, self-hosted REST API for IP geolocation, powered by FastAPI and t
     *   **Start Command:** `python server.py`
 6.  Click **Create Web Service**.
 
-Render will deploy your API and give you a URL (e.g., `https://my-api.onrender.com`).
+Render will deploy your API and give you a URL (e.g., `https://free-geoip-api.onrender.com`).
 
 ## 📖 API Reference
 
@@ -50,7 +50,7 @@ GET /locate/{ip_address}
 ```
 **Example:**
 ```bash
-curl https://your-api.onrender.com/locate/8.8.8.8
+curl https://free-geoip-api.onrender.com/locate/8.8.8.8
 ```
 
 ### Get Location (POST)
