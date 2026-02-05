@@ -143,7 +143,7 @@ async def root():
         </script>
     </body>
     </html>
-    ""
+    """
 
 def resolve_ip(ip: str):
     if not reader:
