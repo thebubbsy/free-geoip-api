@@ -34,17 +34,18 @@ async def root():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Free GeoIP API</title>
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #333; }
-            h1 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; }
-            h2 { margin-top: 2rem; }
-            .container { background: #f9f9f9; padding: 2rem; border-radius: 8px; border: 1px solid #eee; }
-            input, button { padding: 10px; font-size: 1rem; margin-right: 10px; }
-            button { background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #e0e0e0; background-color: #121212; }
+            h1 { border-bottom: 2px solid #333; padding-bottom: 10px; color: #ffffff; }
+            h2 { margin-top: 2rem; color: #ffffff; }
+            .container { background: #1e1e1e; padding: 2rem; border-radius: 8px; border: 1px solid #333; }
+            input { padding: 10px; font-size: 1rem; margin-right: 10px; background: #2d2d2d; border: 1px solid #444; color: #fff; border-radius: 4px; }
+            button { background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 10px; font-size: 1rem; }
             button:hover { background: #0051a2; }
-            pre { background: #2d2d2d; color: #f8f8f2; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem; }
-            code { background: #eaeaea; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
-            .endpoint { background: #e7f5ff; padding: 10px; border-left: 4px solid #0070f3; margin-bottom: 10px; }
-            .method { font-weight: bold; color: #0070f3; }
+            pre { background: #000; color: #0f0; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem; border: 1px solid #333; }
+            code { background: #2d2d2d; padding: 2px 4px; border-radius: 4px; font-family: monospace; color: #ff79c6; }
+            .endpoint { background: #1a2634; padding: 10px; border-left: 4px solid #0070f3; margin-bottom: 10px; }
+            .method { font-weight: bold; color: #4dabf7; }
+            a { color: #4dabf7; }
         </style>
     </head>
     <body>
